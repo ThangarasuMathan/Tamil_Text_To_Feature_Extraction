@@ -1,0 +1,72 @@
+from sklearn.feature_extraction.text import TfidfVectorizer
+import pandas as pd
+
+documentA=r'C:\Users\thangarasum.CYBERDYNE\Desktop\Input_text.txt'
+f = open(documentA,"r",encoding='utf-8') # To read floder contains Resume files
+text = f.read().strip()
+A = text.split(' ')
+
+documentb=r'C:\Users\thangarasum.CYBERDYNE\Desktop\input text1.txt'
+f = open(documentb,"r",encoding='utf-8') # To read floder contains Resume files
+text1 = f.read().strip()
+B = text1.split(' ')
+A1=A
+B1=B
+#Generate the Unique Words
+
+uniqueWords = set(A).union(set(B))
+
+numOfWordsA = dict.fromkeys(uniqueWords, 0)
+for word in A:
+    numOfWordsA[word] += 1
+
+
+
+numOfWordsB = dict.fromkeys(uniqueWords, 0)
+for word in B:
+    numOfWordsB[word] += 1
+
+def computeTF(wordDict, bagOfWords):
+    tfDict = {}
+    bagOfWordsCount = len(bagOfWords)
+    for word, count in wordDict.items():
+        tfDict[word] = count / float(bagOfWordsCount)
+    return tfDict
+
+
+tfA = computeTF(numOfWordsA, A)
+tfB = computeTF(numOfWordsB, B)
+
+
+
+def computeIDF(documents):
+    import math
+    N = len(documents)
+    
+    idfDict = dict.fromkeys(documents[0].keys(), 0)
+    for document in documents:
+        for word, val in document.items():
+            if val > 0:
+                idfDict[word] += 1
+    
+    for word, val in idfDict.items():
+        idfDict[word] = math.log(N / float(val))
+    return idfDict
+
+
+
+idfs = computeIDF([numOfWordsA, numOfWordsB])
+
+
+
+
+def computeTFIDF(tfBagOfWords, idfs):
+    tfidf = {}
+    for word, val in tfBagOfWords.items():
+        tfidf[word] = val * idfs[word]
+    return tfidf
+
+
+tfidfA = computeTFIDF(tfA, idfs)
+tfidfB = computeTFIDF(tfB, idfs)
+df = pd.DataFrame([tfidfA, tfidfB])
